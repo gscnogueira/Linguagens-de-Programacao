@@ -80,16 +80,16 @@ matrizTransposta m = (column):(matrizTransposta rest)
 
 --- c)
 
-multiplicaLinha _ [] = []
-multiplicaLinha  l  m = 
-  sum(zipWith (*) l column):(multiplicaLinha l rest)
-  where column = [e  | (e:es)<-m]
-        rest   = [es | (e:es)<-m, (length es)/=0]
-
 multiplicacaoMatricial :: Num u => [[u]] -> [[u]] -> [[u]]
 multiplicacaoMatricial [] _ = []
 multiplicacaoMatricial (a:as) b =
   ( multiplicaLinha a b ):(multiplicacaoMatricial as b)
+  where multiplicaLinha _ [] = []
+        multiplicaLinha  l  m = 
+          sum(zipWith (*) l column):(multiplicaLinha l rest)
+          where column = [e  | (e:es)<-m]
+                rest   = [es | (e:es)<-m, (length es)/=0]
+
 
 
 
