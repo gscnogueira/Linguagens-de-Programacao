@@ -60,10 +60,10 @@ onde v é o novo estoque.
 
 tomarMedicamento :: Medicamento -> EstoqueMedicamentos -> Maybe EstoqueMedicamentos
 tomarMedicamento m [(m', q')]
-  | m == m'  = Just [(m', q'-1)]
+  | m == m' && q'> 0 = Just [(m', q'-1)]
   |otherwise = Nothing
 tomarMedicamento m ((m', q'):es) 
-  | m == m' = Just ((m',(q'-1)):es)
+  | m == m' && q'>0  = Just ((m',(q'-1)):es)
   | otherwise = getIt (m', q') (tomarMedicamento m es)
   where getIt a (Just e) = Just (a:e)
         getIt a Nothing = Nothing
@@ -233,8 +233,18 @@ deve ser Just v, onde v é o valor final do estoque de medicamentos
 
 -}
 
+executaCuidado :: Cuidado -> Maybe EstoqueMedicamentos -> Maybe EstoqueMedicamentos
+executaCuidado (Comprar m q) (Just e) = Just $ comprarMedicamento m q e
+executaCuidado (Medicar m) (Just e) = tomarMedicamento m  e
+
+executaCuidados :: [Cuidado] -> Maybe EstoqueMedicamentos -> Maybe EstoqueMedicamentos
+executaCuidados _ Nothing = Nothing
+executaCuidados [] e = e
+executaCuidados (a:as) e = executaCuidados as (executaCuidado a e)
+
 executaPlantao :: Plantao -> EstoqueMedicamentos -> Maybe EstoqueMedicamentos
-executaPlantao = undefined
+executaPlantao  p e = executaCuidados cuidados (Just e)
+  where cuidados = concat $ map snd p
 
 {-
 QUESTÃO 10 VALOR: 1,0 ponto
