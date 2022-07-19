@@ -258,8 +258,20 @@ juntamente com ministrar medicamento.
 
 -}
 
+
 satisfaz :: Plantao -> PlanoMedicamento -> EstoqueMedicamentos -> Bool
-satisfaz = undefined
+satisfaz plantao plano estoque
+  | (executaPlantao plantao estoque) == Nothing = False
+  | (horarios plantao) /= (horarios plano) = False
+  | any (==False) (zipWith belongsTo medsPlantao medsPlano) = False
+  | otherwise = True
+  where horarios = map fst
+        isMedicar (Medicar m) = True
+        isMedicar _ = False
+        medsPlantao = map ((map (\(Medicar a) -> a)).(filter isMedicar).(snd)) plantao
+        medsPlano = map snd plano
+        belongsTo a b =  intersect a b == a
+
 
 {-
 
@@ -270,6 +282,15 @@ QUESTÃO 11 VALOR: 1,0 ponto
  Dica: a execução do plantão deve atender ao plano de medicamentos e ao estoque.
 
 -}
+quantidadeComprar estoque (a,b)
+  | sobra < 0  = (a,-sobra)
+  | otherwise = (a, 0)
+  where sobra = (consultarMedicamento a estoque) - (length b)
 
 plantaoCorreto :: PlanoMedicamento -> EstoqueMedicamentos -> Plantao
-plantaoCorreto = undefined
+plantaoCorreto plano estoque = addCompras (map (\(a,b)->(a, map Medicar b)) plano) compras
+  where quantidades = map (quantidadeComprar estoque) (geraReceituarioPlano plano)
+        compras = map (uncurry Comprar) (filter ((/=0).(snd)) quantidades)
+        h = (fst $ head plano) - 1
+        addCompras ((a, b):abs) c = ((a, b++c):abs)
+
